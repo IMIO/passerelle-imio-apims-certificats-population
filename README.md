@@ -5,10 +5,4 @@
 Passerelle connector with RN services
 
 This passerelle is meant to be connected to RN using iMio API Microservices (APIMS). APIMS interrogates RN's services.
-Installation
 
---
-
-Usage
-
---
