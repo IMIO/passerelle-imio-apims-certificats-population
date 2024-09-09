@@ -10,13 +10,16 @@ from passerelle.base.models import BaseResource
 from passerelle.utils.api import endpoint
 from passerelle.utils.jsonresponse import APIError
 
+
 # Define a function to validate the URL in the connector
 def validate_url(value):
     if value.endswith("/"):
         raise ValidationError(
             '%(value)s ne dois pas finir avec un "/"',
-            params={'value': value},
+            params={"value": value},
         )
+
+
 # Define a class to create the connector
 class ApimsCertificatsPopulationConnector(BaseResource):
     """
@@ -34,13 +37,14 @@ class ApimsCertificatsPopulationConnector(BaseResource):
     Methods
     -------
     """
+
     url = models.URLField(
         max_length=128,
         blank=True,
         verbose_name="URL",
         help_text="URL de APIMS Certificats Population",
         validators=[validate_url],
-        default="https://api-staging.imio.be/bosa/v1"
+        default="https://api-staging.imio.be/bosa/v1",
     )
     username = models.CharField(
         max_length=128,
@@ -61,12 +65,12 @@ class ApimsCertificatsPopulationConnector(BaseResource):
         verbose_name="slug de l'instance",
     )
 
-    category = 'Connecteurs iMio'
+    category = "Connecteurs iMio"
 
     api_description = "Connecteur permettant d'intéragir avec APIMS Certificats Population"
 
     class Meta:
-        verbose_name = 'Connecteur APIMS Certificats Population'
+        verbose_name = "Connecteur APIMS Certificats Population"
 
     # endpoint connector
     @endpoint(
@@ -89,10 +93,10 @@ class ApimsCertificatsPopulationConnector(BaseResource):
             },
         },
         display_order=1,
-        display_category="Documents"
+        display_category="Documents",
     )
     def read_document(self, request, document_type, person_nrn, requestor_nrn):
-        """ Get asked json document
+        """Get asked json document
         Parameters
         ----------
         document_type : str
@@ -114,26 +118,25 @@ class ApimsCertificatsPopulationConnector(BaseResource):
             response = requests.get(
                 url,
                 auth=(self.username, self.password),
-                headers={
-                    "X-IMIO-REQUESTOR-NRN": requestor_nrn,
-                    "X-IMIO-MUNICIPALITY-TOKEN": municipality_token
-                },
+                headers={"X-IMIO-REQUESTOR-NRN": requestor_nrn, "X-IMIO-MUNICIPALITY-TOKEN": municipality_token},
             )
         except Exception as e:
-            self.logger.warning(f'NRN APIMS Error: {e}')
-            raise APIError(f'NRN APIMS Error: {e}')
-
+            self.logger.warning(f"NRN APIMS Error: {e}")
+            raise APIError(f"NRN APIMS Error: {e}")
+        if response.status_code == 204:
+            self.logger.warning("NRN APIMS Error: 204")
+            raise APIError("NRN APIMS Error: 204")
 
         pdf_response = None
         try:
             pdf_response = HttpResponse(response.content, content_type="application/pdf")
         except ValueError:
-            self.logger.warning('NRN APIMS Error: bad PDF response')
-            raise APIError('NRN APIMS Error: bad PDF response')
+            self.logger.warning("NRN APIMS Error: bad PDF response")
+            raise APIError("NRN APIMS Error: bad PDF response")
 
         try:
             response.raise_for_status()
         except Exception as e:
-            self.logger.warning(f'NRN APIMS Error: {e}')
-            raise APIError(f'NRN APIMS Error: {e}')
+            self.logger.warning(f"NRN APIMS Error: {e}")
+            raise APIError(f"NRN APIMS Error: {e}")
         return pdf_response
