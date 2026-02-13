@@ -91,11 +91,15 @@ class ApimsCertificatsPopulationConnector(BaseResource):
                 "description": "Numéro de registre national de la personne qui demande un document de type certificat de population",
                 "example_value": "76070935550",
             },
+            "language": {
+                "description": "Langage voulu",
+                "example_value": "fr",
+            },
         },
         display_order=1,
         display_category="Documents",
     )
-    def read_document(self, request, document_type, person_nrn, requestor_nrn):
+    def read_document(self, request, document_type, person_nrn, requestor_nrn, language="fr"):
         """Get asked json document
         Parameters
         ----------
@@ -105,6 +109,8 @@ class ApimsCertificatsPopulationConnector(BaseResource):
             National number for the extract person
         requestor_nrn : str
             National number of the requester
+        language : str
+            Language of the document
         Returns
         -------
         JSON
@@ -119,6 +125,7 @@ class ApimsCertificatsPopulationConnector(BaseResource):
                 url,
                 auth=(self.username, self.password),
                 headers={"X-IMIO-REQUESTOR-NRN": requestor_nrn, "X-IMIO-MUNICIPALITY-TOKEN": municipality_token},
+                params={"language": language}
             )
         except Exception as e:
             self.logger.warning(f"NRN APIMS Error: {e}")
